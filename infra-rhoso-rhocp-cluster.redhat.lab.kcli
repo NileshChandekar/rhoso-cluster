@@ -1,0 +1,80 @@
+## Plan Variables
+parameters:
+  #plan: _CLI_ARGUMENT_OR_RANDOM_NAME_
+  network: RedHatLabNet
+  domain: redhat.lab
+  domain_ip: 10.10.10.1
+  domain_cidr: 10.10.10.0/24
+  image_name: rhel94
+  # TESTED: RHEL 9.4 | Get Red Hat Enterprise Linux KVM Guest Image: https://access.redhat.com/downloads/content/rhel
+  #image_url: _RHEL_IMAGE_URL_ 
+  #rhnuser: _RHN_USER_
+  #rhnpassword: _RHN_PASSWORD_
+  rootpassword: redhat
+  password: redhat
+
+## Create dedicated network & domain
+{{ network }}:
+  type: network
+  domain: {{ domain }}
+  cidr: {{ domain_cidr }}
+  dhcp: true
+
+## Create dns entry for network & domain
+dns-{{ plan }}.{{ domain }}:
+  type: dns
+  net: {{ network }}
+  ip: {{ domain_ip  }}
+
+## Create and attach libvirt pool
+{{ plan }}:
+  type: pool
+  path: /var/lib/libvirt/images/{{ plan }}
+
+## Upload Red Hat Enterprise Linux (rhel) Image
+{{ image_name }}:
+  name: {{ image_name }}
+  type: image
+  url: {{ image_url }}
+
+## Create VM(s) Profile
+
+### Profile for Red Hat Ansible Automation Platform (rhaap) VMs / Nodes
+{{ image_name }}-c4m8d100:
+  type: profile
+  pool: {{ plan }}
+  image: {{ image_name }}
+  uefi_legacy: true
+  numcpus: 4
+  memory: 8000
+  disks:
+  - size: 100
+  # Require manual IP entry in each VM defination
+  reserveip: true
+  # Require to create /etc/hosts entries on libvirt / KVM Virtualization host
+  reservehost: true
+  # Require dhcp on network
+  reservedns: true
+  #sharedkey: true
+  keys: [/root/.ssh/id_rsa.pub]
+  pub_key: /root/.ssh/id_rsa.pub
+  rhnuser: {{ rhnuser }}
+  rhnpassword: {{ rhnpassword }}
+  yamlinventory: true
+  enableroot: true
+  rootpassword: {{ rootpassword }}
+  cmds:
+  - echo {{ password | default('redhat') }} | passwd --stdin cloud-user
+  - dnf install ansible-core -y
+  - echo -e "server {{ domain_ip  }} iburst\ndriftfile /var/lib/chrony/drift\nmakestep 1.0 3\nrtcsync\nkeyfile /etc/chrony.keys\nleapsectz right/UTC\nlogdir /var/log/chrony" > /etc/chrony.conf
+  - systemctl restart chronyd
+
+### Bastion Node For Plan
+bastion-{{ plan }}:
+  uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1010
+  profile: {{ image_name }}-c4m8d100
+  nets:
+  - name: {{ network }}
+    mac: aa:aa:aa:aa:10:10
+    ip: 10.10.10.10
+  files: [MakeMyLocalRegistry.Bash]

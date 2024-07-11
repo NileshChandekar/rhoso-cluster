@@ -1,0 +1,89 @@
+## kcli Infra Configurations
+plan: rhoso-rhocp-cluster
+pool: rhoso-rhocp-cluster
+cluster: rhoso-rhocp-cluster
+domain: redhat.lab
+network: RedHatLabNet
+ntp_server: 10.10.10.1
+force: true
+reservehost: true
+reservedns: true
+keys: [/root/.ssh/id_rsa.pub]
+
+# Predictable VM Configurations
+vmrules:
+- rhoso-rhocp-cluster-bootstrap:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1009
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:09
+      ip: 10.10.10.9
+- rhoso-rhocp-cluster-ctlplane-0:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1012
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:12
+      ip: 10.10.10.12
+- rhoso-rhocp-cluster-ctlplane-1:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1013
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:13
+      ip: 10.10.10.13
+- rhoso-rhocp-cluster-ctlplane-2:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1014
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:14
+      ip: 10.10.10.14
+
+## RHOCP Version Configurations
+tag: 4.14
+version: stable
+pull_secret: openshift_pull.json
+
+## RHOCP Bootstrap Node Sizing
+bootstrap_memory: 16384
+bootstrap_numcpus: 4
+
+## RHOCP Control Plane Nodes (Master Nodes) Sizing
+ctlplanes: 3
+ctlplane_memory: 32768
+ctlplane_numcpus: 16
+ctlplanes_threaded: False
+extra_ctlplane_disks: [100,100]
+extra_ctlplane_networks: []
+
+## RHOCP Data Plane Nodes (Worker Nodes) Sizing
+workers: 3
+worker_memory: 32768
+worker_numcpus: 8
+extra_worker_disks: [100]
+extra_worker_networks: []
+
+## RHOCP SDN Configuration
+network_type: OVNKubernetes
+dualstack: False
+ipv6: False
+
+## RHOCP Control Plane Nodes (Master Nodes) Configuraiton
+mdns: True
+metal3: true
+api_ip: 10.10.10.11
+ingress_ip: 10.10.10.254
+pub_key: /root/.ssh/id_rsa.pub
+users_dev: developer
+users_devpassword: redhat
+users_admin: admin
+users_adminpassword: redhat
+
+## RHOCP Day-2 Operation / Operator Intallation Via Red Hat Container Registry
+apps:
+- users
+- lvms-operator
+- local-storage-operator
+- odf-operator
+- kubernetes-nmstate-operator
+- metallb-operator
+- openshift-cert-manager-operator
+
