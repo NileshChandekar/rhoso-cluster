@@ -85,6 +85,11 @@ podman login -u registry-admin bastion-rhoso-rhocp-cluster.redhat.lab:5000
 ```
 - **NOTE: tag="4.14"  will decide your Red Hat OpenShift Version**
 
+#### Download Red Hat OpenShift Container Platform (RHOCP) Pull Secret:
+```
+Donwload RHOCP Pull Secret from: https://console.redhat.com/openshift/install/pull-secret
+```
+
 #### Install oc/kubectl/opm CLIs on Hypervisor Host:
 ```
 kcli download oc -P version=stable -P tag='4.14'
