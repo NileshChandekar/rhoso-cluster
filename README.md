@@ -18,11 +18,6 @@ dnf update -y
 dnf install tmux mc podman-docker bash-completion vim jq tar git yum-utils  -y
 ssh-keygen
 ```
-#### Check if reboot requires or not
-```
-needs-restarting -r
-```
-- **NOTE: # More information: https://access.redhat.com/solutions/27943**
 #### Install libvirt (KVM Virtualization):
 ```
 yum -y install libvirt libvirt-daemon-driver-qemu qemu-kvm
@@ -37,7 +32,7 @@ dnf install chrony -y
 ```
 #### Configure NTP Server (chrony):
 ```
-cat <EOF> /etc/chrony.conf
+cat <<EOF> /etc/chrony.conf
 server 0.rhel.pool.ntp.org iburst
 server 1.rhel.pool.ntp.org iburst
 server 2.rhel.pool.ntp.org iburst
@@ -53,13 +48,26 @@ EOF
 ```
 #### Enable Local NTP Service:
 ```
-systemctl enable chronyd --now
+systemctl enable --now chronyd
+systemctl status chronyd
+chronyc tracking
 ```
 #### Install [kcli](https://kcli.readthedocs.io/en/latest/) - Hybrid Infra Management Toolchain:
 ```
 ssh-keygen  # Ignore if already created root SSH key pair
 dnf -y copr enable karmab/kcli
 dnf -y install kcli
+```
+#### Check if reboot requires or not
+```
+needs-restarting -r
+```
+- **NOTE: # More information: https://access.redhat.com/solutions/27943**
+
+#### Install & Eanble ksushy service o query vms with redfish APIs
+```
+kcli create sushy-service
+systemctl status ksushy
 ```
 #### Configure default pool for kcli:
 ```
@@ -69,7 +77,6 @@ kcli create pool -p /var/lib/libvirt/images default
 ```
 kcli create plan -f infra-rhoso-rhocp-cluster.redhat.lab.kcli rhoso-rhocp-cluster -A
 ```
-
 #### Create Local Registry on Bastion Host
 ```
 kcli ssh bastion-rhoso-rhocp-cluster.redhat.lab
@@ -78,7 +85,6 @@ sudo -i
 curl -k -u 'registry-admin:redhat' https://bastion-rhoso-rhocp-cluster.redhat.lab:5000/v2/_catalog
 podman login -u registry-admin bastion-rhoso-rhocp-cluster.redhat.lab:5000
 ```
-
 #### Create Red Hat OpenShift Cluster (rhocp) at Red Hat Lab (redhat.lab) From Hypervisor Host :
 ```
  kcli create cluster openshift --pf rhoso-rhocp-cluster.redhat.lab.kcli -P tag="4.14" -P plan="rhoso-rhocp-cluster" -P cluster="rhoso-rhocp-cluster" -P pool="rhoso-rhocp-cluster"
