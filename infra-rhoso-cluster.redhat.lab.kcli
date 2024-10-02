@@ -18,6 +18,7 @@ parameters:
   type: network
   domain: {{ domain }}
   cidr: {{ domain_cidr }}
+  dns: true
   dhcp: true
 
 ## Create dns entry for network & domain

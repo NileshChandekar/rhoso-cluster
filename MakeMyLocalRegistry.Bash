@@ -49,8 +49,15 @@ EOF
 ## Start Local Registry
 systemctl daemon-reload
 systemctl enable --now $REGISTRY_NAME
+systemctl daemon-reload
+systemctl status $REGISTRY_NAME --no-pager
 
 ##  Authentication
+echo
+echo "### Try Me ###"
+echo
 echo "curl -k -u '$REGISTRY_USERNAME:$REGISTRY_PASSWORD' https://$HOSTNAME:5000/v2/_catalog"
-echo "podman login $HOSTNAME:5000"
+echo "podman login -u $REGISTRY_USERNAME  -p  $REGISTRY_PASSWORD $HOSTNAME:5000"
+echo
+echo "##############"
 exit 0

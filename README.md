@@ -75,66 +75,95 @@ kcli create pool -p /var/lib/libvirt/images default
 ```
 #### Create Bastion Host for Red Hat OpenStack & Red Hat OpenShift
 ```
-kcli create plan -f infra-rhoso-rhocp-cluster.redhat.lab.kcli rhoso-rhocp-cluster -A
+kcli create plan -f infra-rhoso-cluster.redhat.lab.kcli rhoso-cluster -A
 ```
 #### Create Local Registry on Bastion Host
 ```
-kcli ssh bastion-rhoso-rhocp-cluster.redhat.lab
-sudo -i
-./MakeMyLocalRegistry.Bash
-curl -k -u 'registry-admin:redhat' https://bastion-rhoso-rhocp-cluster.redhat.lab:5000/v2/_catalog
-podman login -u registry-admin bastion-rhoso-rhocp-cluster.redhat.lab:5000
+kcli ssh bastion-rhoso-cluster.redhat.lab
+sudo /root/MakeMyLocalRegistry.Bash
 ```
-#### Create Red Hat OpenShift Cluster (rhocp) at Red Hat Lab (redhat.lab) From Hypervisor Host :
-```
- kcli create cluster openshift --pf rhoso-rhocp-cluster.redhat.lab.kcli -P tag="4.14" -P plan="rhoso-rhocp-cluster" -P cluster="rhoso-rhocp-cluster" -P pool="rhoso-rhocp-cluster"
-```
-- **NOTE: tag="4.14"  will decide your Red Hat OpenShift Version**
-
-#### Download Red Hat OpenShift Container Platform (RHOCP) Pull Secret From:
+#### Download Red Hat OpenShift Container Platform (RHOCP) Pull Secret To openshif-pull-secret.json:
 ```
 https://console.redhat.com/openshift/install/pull-secret
 ```
-
 #### Install oc/kubectl/opm CLIs on Hypervisor Host:
 ```
-kcli download oc -P version=stable -P tag='4.14'
-kcli download kubectl -P tag='4.14'
+kcli download oc -P version=stable -P tag='4.16'
+kcli download kubectl -P tag='4.16'
 wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz
 tar -zxvf opm-linux.tar.gz
 cp kubectl oc opm /usr/bin/
 ```
 
-### Sample Expected Output From Hypervisor Host For Red Hat Openshift Version 4.16 
+#### Create Red Hat OpenShift Cluster (RHOCP) at Red Hat Lab (redhat.lab) From Hypervisor Host :
 ```
-[root@dell-r440-09 rhoso-ocp414-kcli]# kcli  list vms && kcli list dns redhat.lab && cat /etc/hosts
-+---------------------------------+--------+--------------+----------------------------------------------------+----------------------+-----------------+
-|               Name              | Status |      Ip      |                       Source                       |         Plan         |     Profile     |
-+---------------------------------+--------+--------------+----------------------------------------------------+----------------------+-----------------+
-|   bastion-rhoso-ocp416-cluster  |   up   | 10.10.10.10  |                       rhel94                       | rhoso-ocp416-cluster | rhel94-c4m8d100 |
-| rhoso-ocp416-cluster-ctlplane-0 |   up   | 10.10.10.209 | rhcos-416.94.202405291527-0-openstack.x86_64.qcow2 | rhoso-ocp416-cluster |      kvirt      |
-| rhoso-ocp416-cluster-ctlplane-1 |   up   | 10.10.10.109 | rhcos-416.94.202405291527-0-openstack.x86_64.qcow2 | rhoso-ocp416-cluster |      kvirt      |
-| rhoso-ocp416-cluster-ctlplane-2 |   up   | 10.10.10.200 | rhcos-416.94.202405291527-0-openstack.x86_64.qcow2 | rhoso-ocp416-cluster |      kvirt      |
-|  rhoso-ocp416-cluster-worker-0  |   up   | 10.10.10.50  | rhcos-416.94.202405291527-0-openstack.x86_64.qcow2 | rhoso-ocp416-cluster |      kvirt      |
-|  rhoso-ocp416-cluster-worker-1  |   up   | 10.10.10.35  | rhcos-416.94.202405291527-0-openstack.x86_64.qcow2 | rhoso-ocp416-cluster |      kvirt      |
-|  rhoso-ocp416-cluster-worker-2  |   up   | 10.10.10.110 | rhcos-416.94.202405291527-0-openstack.x86_64.qcow2 | rhoso-ocp416-cluster |      kvirt      |
-+---------------------------------+--------+--------------+----------------------------------------------------+----------------------+-----------------+
-+--------------------------------------------+------+-----+-----------------------------+
-|                   Entry                    | Type | TTL |             Data            |
-+--------------------------------------------+------+-----+-----------------------------+
-|  bastion-rhoso-ocp416-cluster.redhat.lab   |  A   |  0  |  10.10.10.10 (RedHatLabNet) |
-|    dns-rhoso-ocp416-cluster.redhat.lab     |  A   |  0  |  10.10.10.1 (RedHatLabNet)  |
-| rhoso-ocp416-cluster-ctlplane-0.redhat.lab |  A   |  0  | 10.10.10.209 (RedHatLabNet) |
-| rhoso-ocp416-cluster-ctlplane-1.redhat.lab |  A   |  0  | 10.10.10.109 (RedHatLabNet) |
-| rhoso-ocp416-cluster-ctlplane-2.redhat.lab |  A   |  0  | 10.10.10.200 (RedHatLabNet) |
-|  rhoso-ocp416-cluster-worker-0.redhat.lab  |  A   |  0  |  10.10.10.50 (RedHatLabNet) |
-|  rhoso-ocp416-cluster-worker-1.redhat.lab  |  A   |  0  |  10.10.10.35 (RedHatLabNet) |
-|  rhoso-ocp416-cluster-worker-2.redhat.lab  |  A   |  0  | 10.10.10.110 (RedHatLabNet) |
-+--------------------------------------------+------+-----+-----------------------------+
+kcli create cluster openshift --pf rhoso-cluster.redhat.lab.kcli -P tag="4.16" -P plan="rhoso-cluster" -P cluster="rhoso-cluster" -P pool="rhoso-cluster"
+```
+- **NOTE: tag="4.16"  will decide your Red Hat OpenShift Version**
+
+### Sample Expected Output From Hypervisor Host For Red Hat Openshift Version 4.16 
+
+```
+$ export KUBECONFIG=/root/.kcli/clusters/rhoso-cluster/auth/kubeconfig
+$ oc get nodes
+NAME                                  STATUS   ROLES                  AGE    VERSION
+rhoso-cluster-ctlplane-0.redhat.lab   Ready    control-plane,master   143m   v1.29.8+f10c92d
+rhoso-cluster-ctlplane-1.redhat.lab   Ready    control-plane,master   143m   v1.29.8+f10c92d
+rhoso-cluster-ctlplane-2.redhat.lab   Ready    control-plane,master   143m   v1.29.8+f10c92d
+rhoso-cluster-worker-0.redhat.lab     Ready    worker                 130m   v1.29.8+f10c92d
+rhoso-cluster-worker-1.redhat.lab     Ready    worker                 129m   v1.29.8+f10c92d
+rhoso-cluster-worker-2.redhat.lab     Ready    worker                 129m   v1.29.8+f10c92d
+```
+
+
+### Sample Expected Output From Hypervisor Host From kcli
+```
+kcli list network && kcli list dns redhat.lab && kcli list vms && cat /etc/hosts
+Listing Networks...
++--------------+--------+------------------+------+------------+------+
+| Network      |  Type  |       Cidr       | Dhcp |   Domain   | Mode |
++--------------+--------+------------------+------+------------+------+
+| RedHatLabNet | routed |  10.10.10.0/24   | True | redhat.lab | nat  |
+| default      | routed | 192.168.122.0/24 | True |  default   | nat  |
++--------------+--------+------------------+------+------------+------+
++-------------------------------------+------+-----+----------------------------+
+|                Entry                | Type | TTL |            Data            |
++-------------------------------------+------+-----+----------------------------+
+|   bastion-rhoso-cluster.redhat.lab  |  A   |  0  | 10.10.10.10 (RedHatLabNet) |
+|     dns-rhoso-cluster.redhat.lab    |  A   |  0  | 10.10.10.1 (RedHatLabNet)  |
+| rhoso-cluster-ctlplane-0.redhat.lab |  A   |  0  | 10.10.10.12 (RedHatLabNet) |
+| rhoso-cluster-ctlplane-1.redhat.lab |  A   |  0  | 10.10.10.13 (RedHatLabNet) |
+| rhoso-cluster-ctlplane-2.redhat.lab |  A   |  0  | 10.10.10.14 (RedHatLabNet) |
+|  rhoso-cluster-worker-0.redhat.lab  |  A   |  0  | 10.10.10.15 (RedHatLabNet) |
+|  rhoso-cluster-worker-1.redhat.lab  |  A   |  0  | 10.10.10.16 (RedHatLabNet) |
+|  rhoso-cluster-worker-2.redhat.lab  |  A   |  0  | 10.10.10.17 (RedHatLabNet) |
++-------------------------------------+------+-----+----------------------------+
++--------------------------+--------+-------------+----------------------------------------------------+---------------+-----------------+
+|           Name           | Status |      Ip     |                       Source                       |      Plan     |     Profile     |
++--------------------------+--------+-------------+----------------------------------------------------+---------------+-----------------+
+|  bastion-rhoso-cluster   |   up   | 10.10.10.10 |                       rhel94                       | rhoso-cluster | rhel94-c4m8d100 |
+| rhoso-cluster-ctlplane-0 |   up   | 10.10.10.12 | rhcos-416.94.202406251923-0-openstack.x86_64.qcow2 | rhoso-cluster |      kvirt      |
+| rhoso-cluster-ctlplane-1 |   up   | 10.10.10.13 | rhcos-416.94.202406251923-0-openstack.x86_64.qcow2 | rhoso-cluster |      kvirt      |
+| rhoso-cluster-ctlplane-2 |   up   | 10.10.10.14 | rhcos-416.94.202406251923-0-openstack.x86_64.qcow2 | rhoso-cluster |      kvirt      |
+|  rhoso-cluster-worker-0  |   up   | 10.10.10.15 | rhcos-416.94.202406251923-0-openstack.x86_64.qcow2 | rhoso-cluster |      kvirt      |
+|  rhoso-cluster-worker-1  |   up   | 10.10.10.16 | rhcos-416.94.202406251923-0-openstack.x86_64.qcow2 | rhoso-cluster |      kvirt      |
+|  rhoso-cluster-worker-2  |   up   | 10.10.10.17 | rhcos-416.94.202406251923-0-openstack.x86_64.qcow2 | rhoso-cluster |      kvirt      |
++--------------------------+--------+-------------+----------------------------------------------------+---------------+-----------------+
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+10.10.10.11 api.rhoso-cluster.redhat.lab
+10.10.10.254 console-openshift-console.apps.rhoso-cluster.redhat.lab oauth-openshift.apps.rhoso-cluster.redhat.lab prometheus-k8s-openshift-monitoring.apps.rhoso-cluster.redhat.lab
+10.10.10.10 bastion-rhoso-cluster bastion-rhoso-cluster.RedHatLabNet bastion-rhoso-cluster.redhat.lab # KVIRT
+10.10.10.12 rhoso-cluster-ctlplane-0 rhoso-cluster-ctlplane-0.RedHatLabNet rhoso-cluster-ctlplane-0.redhat.lab # KVIRT
+10.10.10.13 rhoso-cluster-ctlplane-1 rhoso-cluster-ctlplane-1.RedHatLabNet rhoso-cluster-ctlplane-1.redhat.lab # KVIRT
+10.10.10.14 rhoso-cluster-ctlplane-2 rhoso-cluster-ctlplane-2.RedHatLabNet rhoso-cluster-ctlplane-2.redhat.lab # KVIRT
+10.10.10.15 rhoso-cluster-worker-0 rhoso-cluster-worker-0.RedHatLabNet rhoso-cluster-worker-0.redhat.lab # KVIRT
+10.10.10.16 rhoso-cluster-worker-1 rhoso-cluster-worker-1.RedHatLabNet rhoso-cluster-worker-1.redhat.lab # KVIRT
+10.10.10.17 rhoso-cluster-worker-2 rhoso-cluster-worker-2.RedHatLabNet rhoso-cluster-worker-2.redhat.lab # KVIRT
 ```
 
 #### Follow Official Beta Document Deploying Red Hat OpenStack Services on OpenShift: 
 ```
-https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0-beta/html-single/deploying_red_hat_openstack_services_on_openshift/index
+https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html-single/deploying_red_hat_openstack_services_on_openshift/index
 ```
 

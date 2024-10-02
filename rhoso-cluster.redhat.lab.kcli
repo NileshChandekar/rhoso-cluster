@@ -1,7 +1,7 @@
 ## kcli Infra Configurations
-plan: rhoso-rhocp-cluster
-pool: rhoso-rhocp-cluster
-cluster: rhoso-rhocp-cluster
+plan: rhoso-cluster
+pool: rhoso-cluster
+cluster: rhoso-cluster
 domain: redhat.lab
 network: RedHatLabNet
 ntp_server: 10.10.10.1
@@ -12,35 +12,60 @@ keys: [/root/.ssh/id_rsa.pub]
 
 # Predictable VM Configurations
 vmrules:
-- rhoso-rhocp-cluster-bootstrap:
+- rhoso-cluster-bootstrap:
     uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1009
     nets:
     - name: RedHatLabNet
       mac: aa:aa:aa:aa:10:09
       ip: 10.10.10.9
-- rhoso-rhocp-cluster-ctlplane-0:
+      reserveip: true
+- rhoso-cluster-ctlplane-0:
     uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1012
     nets:
     - name: RedHatLabNet
       mac: aa:aa:aa:aa:10:12
       ip: 10.10.10.12
-- rhoso-rhocp-cluster-ctlplane-1:
+      reserveip: true
+- rhoso-cluster-ctlplane-1:
     uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1013
     nets:
     - name: RedHatLabNet
       mac: aa:aa:aa:aa:10:13
       ip: 10.10.10.13
-- rhoso-rhocp-cluster-ctlplane-2:
+      reserveip: true
+- rhoso-cluster-ctlplane-2:
     uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1014
     nets:
     - name: RedHatLabNet
       mac: aa:aa:aa:aa:10:14
       ip: 10.10.10.14
+      reserveip: true
+- rhoso-cluster-worker-0:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1015
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:15
+      ip: 10.10.10.15
+      reserveip: true
+- rhoso-cluster-worker-1:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1016
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:16
+      ip: 10.10.10.16
+      reserveip: true
+- rhoso-cluster-worker-2:
+    uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa1017
+    nets:
+    - name: RedHatLabNet
+      mac: aa:aa:aa:aa:10:17
+      ip: 10.10.10.17
+      reserveip: true
 
 ## RHOCP Version Configurations
-tag: 4.14
+tag: 4.16
 version: stable
-pull_secret: openshift_pull.json
+pull_secret: openshift-pull-secret.json
 
 ## RHOCP Bootstrap Node Sizing
 bootstrap_memory: 16384
@@ -48,18 +73,20 @@ bootstrap_numcpus: 4
 
 ## RHOCP Control Plane Nodes (Master Nodes) Sizing
 ctlplanes: 3
-ctlplane_memory: 32768
+ctlplane_memory: 65536
 ctlplane_numcpus: 16
 ctlplanes_threaded: False
-extra_ctlplane_disks: [100,100]
-extra_ctlplane_networks: []
+disk_size: 200
+extra_ctlplane_disks: [200,200]
+#extra_ctlplane_networks: []
 
 ## RHOCP Data Plane Nodes (Worker Nodes) Sizing
 workers: 3
-worker_memory: 32768
-worker_numcpus: 8
-extra_worker_disks: [100]
-extra_worker_networks: []
+worker_memory: 65536
+worker_numcpus: 16
+disk_size: 200
+extra_ctlplane_disks: [200,200]
+#extra_worker_networks: []
 
 ## RHOCP SDN Configuration
 network_type: OVNKubernetes
@@ -67,8 +94,8 @@ dualstack: False
 ipv6: False
 
 ## RHOCP Control Plane Nodes (Master Nodes) Configuraiton
-mdns: True
-metal3: true
+#mdns: True
+#metal3: true
 api_ip: 10.10.10.11
 ingress_ip: 10.10.10.254
 pub_key: /root/.ssh/id_rsa.pub
@@ -80,10 +107,5 @@ users_adminpassword: redhat
 ## RHOCP Day-2 Operation / Operator Intallation Via Red Hat Container Registry
 apps:
 - users
-- lvms-operator
-- local-storage-operator
-- odf-operator
-- kubernetes-nmstate-operator
-- metallb-operator
 - openshift-cert-manager-operator
 
